@@ -33,19 +33,34 @@ func init(){
 	if err != nil {
 		log.Fatal(2, "Fail to connect 'redis-cluster': %v", err)
 	}
-//	list := map[interface{}]interface{}{"aa":"a","cc":"2","bb":"c","tt":"c"}
-//	reply :=Mset(list)
-//	reply,err := Mget([]interface{}{"aa","","cc"})
-	err = Hmset("aaa",map[interface{}]interface{}{"aa":2,"bb":3,"cc":4})
-//log.Fatal(2, "res': %v", err)
-//	temp := []interface{}{"hash","f11","1","f22","2"}
-//	_,err = cluster.Do("HMSET", temp...)
-	reply,err := Hgetall("aaa")
-	log.Fatal(2, "res': %v", reply)
+
+}
+func SetEx(key,value string,expire int)(res bool,err error){
+	_,err = cluster.Do("SETEX",key,expire,value)
+	if err==nil {
+		return true,nil
+	}
+	return false,err
+}
+
+func Expire(key,expire int)(res bool,err error){
+	_,err = cluster.Do("EXPIRE",key,expire)
+	if err==nil {
+		return true,nil
+	}
+	return false,err
 }
 
 func Set(key string,value string)(res bool,err error){
 	reply,err := cluster.Do("SET", key, value)
+	if reply=="OK" {
+		return true,nil
+	}
+	return false,err
+}
+
+func SetNx(key string,value string)(res bool,err error){
+	reply,err := cluster.Do("SETNX", key, value)
 	if reply=="OK" {
 		return true,nil
 	}
@@ -57,8 +72,23 @@ func Get(key string)(reply string,err error){
 	return
 }
 
-func Incr(key string,step int)(reply int,err error){
-	reply, err = redis.Int(cluster.Do("INCR", key, step))
+func Incr(key string)(reply int,err error){
+	reply, err = redis.Int(cluster.Do("INCR", key))
+	return
+}
+
+func IncrBy(key string,step int)(reply int,err error){
+	reply, err = redis.Int(cluster.Do("INCRBY", key, step))
+	return
+}
+
+func Decr(key string)(reply int,err error){
+	reply, err = redis.Int(cluster.Do("Decr", key))
+	return
+}
+
+func DecrBy(key string,step int)(reply int,err error){
+	reply, err = redis.Int(cluster.Do("DECRBY", key, step))
 	return
 }
 
